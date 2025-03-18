@@ -1,60 +1,74 @@
-# nginx-next-sqldb-dock
+# Multi-Container Docker Setup: Nginx + Next.js + SQLite
+
 A Docker template for a multi-container setup featuring a Next.js app proxied by NGINX, with an optional SQLite3 database container for persistence and file serving capabilities.
 
 ## Overview
-This template provides a scalable foundation combining a Next.js frontend, NGINX reverse proxy, and the SQLite3 database. The file server feature can be enabled to serve static files, making it ideal for managing offline content.
+This template provides a scalable foundation combining:
+- **Next.js** (App Router) for frontend and API handling.
+- **NGINX** for reverse proxy and optional file serving.
+- **SQLite3** for persistence (optional).
 
 ## Structure
-- `next-app/` - Your Next.js app lives here (using the App Router).
-- `nginx/` - NGINX configuration, acting as the reverse proxy and optional file server.
-- `sqldb/` - Directory for SQLite3-related files:
-  - `sqldb/data/` - Stores the SQLite database file (`noxsvault.db`).
-  - `sqldb/scripts/` - Contains SQL initialization scripts (e.g., `init.sql`).
-- `Dockerfile.next` - Builds the Next.js app container.
-- `Dockerfile.nginx` - Sets up the NGINX container.
-- `Dockerfile.sqldb` - Builds the SQLite3 database container.
-- `docker-compose.yml` - Orchestrates the Next.js, NGINX, and SQLite3 containers.
+```
+├── next-app/          # Place your Next.js app here
+├── nginx/             # NGINX configuration (reverse proxy, optional file server)
+│   ├── nginx.conf
+├── sqldb/             # SQLite3 database setup
+│   ├── data/          # SQLite database storage (`noxsvault.db`)
+│   ├── scripts/
+│   │   ├── init.sql  # DB schema & test data
+├── Dockerfile.next    # Next.js app container
+├── Dockerfile.nginx   # NGINX container
+├── Dockerfile.sqldb   # SQLite3 container
+├── docker-compose.yml # Service orchestration
+└── README.md
+```
 
 ## Usage
-1. **Set Up Your Next.js App**:
-- Place your Next.js app in the `next-app/` directory. If you don’t have one, create it:
-    ```bash
-     npx create-next-app@latest next-app --ts --app
-    ```
-- Ensure your app uses the App Router (e.g., app/ directory structure).
+### 1. Set Up Your Next.js App
+Place your Next.js project in the `next-app/` directory. If you don’t have one, create it:
+```sh
+npx create-next-app@latest next-app --ts --app
+```
+Ensure it builds successfully before proceeding.
 
-2. **Prepare the File Server (Optional):**
-- Create a directory for static files (e.g., </home/pi/resources> on Raspberry Pi).
-- Add test files (e.g., `echo "Hello, NOXSVAULT!" > /home/pi/resources/test.txt`).
+### 2. (Optional) Enable File Server
+To serve static files:
+- Create a directory (e.g., `/home/pi/resources`).
+- Add test files: `echo "Hello, NOXSVAULT!" > /home/pi/resources/test.txt`.
+- Uncomment `/files/` block in `nginx.conf` and adjust `volumes` in `docker-compose.yml`.
 
-3. **Build and Run:**
-From the root directory, run:
-```bash
+### 3. Build and Run
+```sh
 docker-compose up --build
 ```
-- Access the app at `http://localhost:3000` (Next.js) or `http://localhost` (NGINX proxy).
+- Access Next.js app: [http://localhost:3000](http://localhost:3000)
+- Access via NGINX: [http://localhost](http://localhost)
 
-4. **Enable the File Server (Optional):**
-- Uncomment the `location /files/` block in `nginx/nginx.conf`.
-- Uncomment and adjust the `volumes` mapping in `docker-compose.yml` (e.g., `/home/pi/resources:/resources`).
-- Rebuild with `docker-compose up --build`.
-- Access files at `http://localhost/files/`.
-
-5. **Initialize the Database:**
-- The `sqldb` container runs the `init.sql` script to create the `users` and `files` tables with an initial admin user. 
-- Test the database endpoint at `http://localhost:3000/api/test-db`.
+### 4. Initialize the Database
+The `sqldb` container runs `init.sql` to create `users` and `files` tables.
+- Test database: [http://localhost:3000/api/test-db](http://localhost:3000/api/test-db)
 
 ## Configuration
-- **NGINX (Port 80)**: Proxies requests to the Next.js app (port 3000) by default. Enable the file server by uncommenting the `/files/` location block.
-- **Next.js (Port 3000)**: Hosts the API and frontend. Customize API routes in `next-app/app/api/`.
-- **SQLite3**: Stores data in `sqldb/data/noxsvault.db`. Modify `sqldb/scripts/init.sql` to change the schema.
+- **NGINX (Port 80)**: Reverse proxy to Next.js (port 3000). Enable file serving if needed.
+- **Next.js (Port 3000)**: Customize API routes in `next-app/app/api/`.
+- **SQLite3**: Data stored in `sqldb/data/noxsvault.db`. Modify `init.sql` for schema changes.
 
-## Example Endpoints
-- Test Database: `http://localhost:3000/api/test-db` (returns users table).
-- Create User: `http://localhost:3000/api/users` (POST with JSON `{ "username": "user", "password": "pass", "role": "guest" }`).
+## Example API Endpoints
+- Test Database: `http://localhost:3000/api/test-db`
+- Create User:
+```sh
+POST http://localhost:3000/api/users
+{
+  "username": "user",
+  "password": "pass",
+  "role": "guest"
+}
+```
 
 ## Notes
-- **Architecture**: Optimized for ARM64. Ensure native dependencies (e.g., `better-sqlite3`, `bcrypt`) are rebuilt during the build process.
-- **Customization**: Adjust `nginx/nginx.conf` or d`ocker-compose.yml` for specific needs (e.g., ports, paths).
-- **Troubleshooting**: Check logs with `docker-compose logs <service>` (e.g., `nginx`, `next-app`, `sqldb`). Common issues include network errors or missing files.
-- **Offline Usage**: Pre-pull required images (e.g., `nginx:alpine`, `node:18-alpine`) if running without internet.
+- **Ensure Next.js app builds successfully before running containers.**
+- **Check logs with** `docker-compose logs <service>` (e.g., `nginx`, `next-app`, `sqldb`).
+- **For offline usage**, pre-pull images (`nginx:alpine`, `node:18-alpine`).
+
+Now you're ready to go!
