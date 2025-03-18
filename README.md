@@ -1,4 +1,4 @@
-# Multi-Container Docker Setup: Nginx + Next.js + SQLite
+# Docker Template: Nginx + Next.js + SQLite
 
 A Docker template for a multi-container setup featuring a Next.js app proxied by NGINX, with an optional SQLite3 database container for persistence and file serving capabilities.
 
