@@ -1,0 +1,38 @@
+services:
+  next-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - sqldb
+    volumes:
+      - ./sqldb/data:/app/data  # Updated path
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    # Optional: Uncomment and adjust the following line to enable file serving
+    # volumes:
+    #   - <add-a-path-to-your-local-machine>:/resources
+    depends_on:
+      - next-app
+
+  sqldb:
+    build:
+      context: .
+      dockerfile: Dockerfile.sqldb
+    volumes:
+      - ./sqldb/data:/data  # Updated path
+    environment:
+      - DB_PATH=/data/noxsvault.db
+    command: ["sh", "-c", "if [ ! -f /data/noxsvault.db ]; then sqlite3 /data/noxsvault.db < /sqldb/scripts/init.sql; fi && tail -f /dev/null"]
+
+volumes:
+  data:

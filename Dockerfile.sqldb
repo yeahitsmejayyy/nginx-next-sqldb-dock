@@ -1,0 +1,14 @@
+# Use Alpine Linux for a minimal image
+FROM arm64v8/alpine:3.18
+
+# Install SQLite3
+RUN apk add --no-cache sqlite
+
+# Set working directory
+WORKDIR /data
+
+# Copy initialization script (optional)
+COPY sqldb/scripts/init.sql /sqldb/scripts/init.sql
+
+# Expose no ports (SQLite is file-based, accessed via volume)
+CMD ["sh", "-c", "sqlite3 $DB_PATH < /sqldb/scripts/init.sql && tail -f /dev/null"]
