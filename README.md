@@ -14,7 +14,7 @@ This template provides a scalable foundation combining:
 ├── nginx/             # NGINX configuration (reverse proxy, optional file server)
 │   ├── nginx.conf
 ├── sqldb/             # SQLite3 database setup
-│   ├── data/          # SQLite database storage (`noxsvault.db`)
+│   ├── data/          # SQLite database storage (`app.db`)
 │   ├── scripts/
 │   │   ├── init.sql  # DB schema & test data
 ├── Dockerfile.next    # Next.js app container
@@ -34,8 +34,8 @@ Ensure it builds successfully before proceeding.
 
 ### 2. (Optional) Enable File Server
 To serve static files:
-- Create a directory (e.g., `/home/pi/resources`).
-- Add test files: `echo "Hello, NOXSVAULT!" > /home/pi/resources/test.txt`.
+- Create a directory (e.g., `/home/user/resources`).
+- Add test files: `echo "Hello, Docker!" > /home/user/resources/test.txt`.
 - Uncomment `/files/` block in `nginx.conf` and adjust `volumes` in `docker-compose.yml`.
 
 ### 3. Build and Run
@@ -52,7 +52,7 @@ The `sqldb` container runs `init.sql` to create `users` and `files` tables.
 ## Configuration
 - **NGINX (Port 80)**: Reverse proxy to Next.js (port 3000). Enable file serving if needed.
 - **Next.js (Port 3000)**: Customize API routes in `next-app/app/api/`.
-- **SQLite3**: Data stored in `sqldb/data/noxsvault.db`. Modify `init.sql` for schema changes.
+- **SQLite3**: Data stored in `sqldb/data/app.db`. Modify `init.sql` for schema changes.
 
 ## Example API Endpoints
 - Test Database: `http://localhost:3000/api/test-db`
